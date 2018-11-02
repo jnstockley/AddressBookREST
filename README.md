@@ -6,12 +6,14 @@ Setup:
 4. Change user and pass to your mySQL user username and password
 5. In encryption create two diffrent random strings have to be 8 characters longs
 
-How to use
+How to use:
+
 Get Methods:
   1. Open a browser ie. chrome
   2. Go to the URL of you server:8200/AddressBookREST/"table"
   3. The program will return JSON to you
   4. For get by id add the id to the end of the url
+
 All Methods:
   1. Install a program called postman
   2. Type in server:8200/AddressBookREST/"table"
