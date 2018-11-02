@@ -21,4 +21,5 @@ All Methods:
   4. For put go to body
   5. Type in JSON manually
   6. For get by id or delete add the id number at the end of the url
-Any other questions tweet me on twitter @jackstockley_ and Ill add it her
+
+Any other questions tweet me on twitter @jackstockley_ and Ill add it here
