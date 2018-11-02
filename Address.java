@@ -1,9 +1,7 @@
 package mysql;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class Address {
 	private int id;
@@ -16,50 +14,98 @@ public class Address {
 	public Address(){
 	}
 
+	/**
+	 * Returns the id of the object
+	 * @return The id given to the object
+	 */
 	public int getId(){
 		return id;
 	}
 
+	/**
+	 * Sets the id of the object
+	 * @param id The id from the mySQL database
+	 */
 	public void setId(int id) {
 		this.id = id;
 	}
 
+	/**
+	 * Returns the house number of the object
+	 * @return The given house number
+	 */
 	public String getNumber() {
 		return number;
 	}
 
+	/**
+	 * Sets the house number of the object
+	 * @param number The house number from the mySQL database
+	 */
 	public void setNumber(String number) {
 		this.number = number;
 	}
 
+	/**
+	 * Returns the street name of the object
+	 * @return The given street name
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Sets the street name of the object
+	 * @param name The street name from the mySQL database
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	/**
+	 * Returns the city of the object
+	 * @return The given city
+	 */
 	public String getCity() {
 		return city;
 	}
 
+	/**
+	 * Sets the city of the object
+	 * @param city The city from the mySQL database
+	 */
 	public void setCity(String city) {
 		this.city = city;
 	}
 
+	/**
+	 * Returns the state of the object
+	 * @return The given state
+	 */
 	public String getState() {
 		return state;
 	}
 
+	/**
+	 * Sets the state of the object
+	 * @param state The state from the mySQL database
+	 */
 	public void setState(String state) {
 		this.state = state;
 	}
 
+	/**
+	 * Returns the zip code of the object
+	 * @return The given zip code
+	 */
 	public String getZip() {
 		return zip;
 	}
 
+	/**
+	 * Sets the zip code of the object
+	 * @param zip The zip code from the mySQL database
+	 */
 	public void setZip(String zip) {
 		this.zip = zip;
 	}
@@ -70,7 +116,7 @@ public class Address {
 	public void print() {
 		System.out.println("Id: " + this.getId() + " " + this.getNumber() + " " + this.getName() + " " + this.getCity() + ", " + this.getState() + " " + this.getZip());
 	}
-
+	
 	/**
 	 * Returns id, the house number, the street name, the city, the state, and the zip code of the address called
 	 */
@@ -85,6 +131,7 @@ public class Address {
 	 */
 	public static List<Address> getAll(Connection conn){
 		List<Address> addresses = new ArrayList<Address>();
+		Encryption decrypt = new Encryption();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT id, number, name, city, state, zip FROM address");
 			ResultSet rs = ps.executeQuery();
@@ -92,11 +139,11 @@ public class Address {
 				Address address = new Address();
 				int col = 1;
 				address.setId(rs.getInt(col++));
-				address.setNumber(rs.getString(col++));
-				address.setName(rs.getString(col++));
-				address.setCity(rs.getString(col++));
-				address.setState(rs.getString(col++));
-				address.setZip(rs.getString(col++));
+				address.setNumber(decrypt.decrypt(rs.getString(col++).getBytes()));
+				address.setName(decrypt.decrypt(rs.getString(col++).getBytes()));
+				address.setCity(decrypt.decrypt(rs.getString(col++).getBytes()));
+				address.setState(decrypt.decrypt(rs.getString(col++).getBytes()));
+				address.setZip(decrypt.decrypt(rs.getString(col++).getBytes()));
 				addresses.add(address);
 			}
 			return addresses;
@@ -115,42 +162,32 @@ public class Address {
 	 * @return The singular address the user wants
 	 */
 	public static Address getBy(Connection conn, String value, String fieldName){
+		Encryption decrypt = new Encryption();
 		try {
 			Address address = new Address();
-			PreparedStatement ps = conn.prepareStatement("SELECT id, number, name, city, state, zip FROM address where " + fieldName + "  = ?");
+			PreparedStatement ps = conn.prepareStatement("SELECT id, number, name, city, state, zip FROM address WHERE " + fieldName + "  = ?");
+			//TODO Bug fixed?
 			if(fieldName.equals("id") || fieldName.equals("zip")){
 				ps.setInt(1,  Integer.parseInt(value));
 			}else{
 				ps.setString(1, value);
 			}
+			ps.setInt(1, Integer.parseInt(value));
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()){
 				int col = 1;
 				address.setId(rs.getInt(col++));
-				address.setNumber(rs.getString(col++));
-				address.setName(rs.getString(col++));
-				address.setCity(rs.getString(col++));
-				address.setState(rs.getString(col++));
-				address.setZip(rs.getString(col++));
+				address.setNumber(decrypt.decrypt(rs.getString(col++).getBytes()));
+				address.setName(decrypt.decrypt(rs.getString(col++).getBytes()));
+				address.setCity(decrypt.decrypt(rs.getString(col++).getBytes()));
+				address.setState(decrypt.decrypt(rs.getString(col++).getBytes()));
+				address.setZip(decrypt.decrypt(rs.getString(col++).getBytes()));
 			}
 			return address;
 		}
 		catch (Exception e) {
 			System.out.println(e.getMessage());
 			return null;
-		}
-	}
-
-	/**
-	 * Takes an address object and passes it to the insert method
-	 * @param conn The mySQL connection
-	 * @param address An address object with the new number, name, city, state, and zip
-	 */
-	public static void insert(Connection conn, Address address){
-		try {
-			Address.insert(conn, address.getNumber(), address.getName(), address.getCity(), address.getState(), address.getZip());
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
 		}
 	}
 
@@ -164,33 +201,21 @@ public class Address {
 	 * @param zip The zip code the user entered
 	 */
 	public static void insert(Connection conn, String number, String name, String city, String state, String zip){
+		Encryption encrypt = new Encryption();
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO address (number, name, city, state, zip) values(?,?,?,?,?)");
-			ps.setString(1, number);
-			ps.setString(2, name);
-			ps.setString(3, city);
-			ps.setString(4, state);
-			ps.setString(5, zip);
+			ps.setString(1, encrypt.encrypt(number));
+			ps.setString(2, encrypt.encrypt(name));
+			ps.setString(3, encrypt.encrypt(city));
+			ps.setString(4, encrypt.encrypt(state));
+			ps.setString(5, encrypt.encrypt(zip));
 			ps.execute();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 	}
 
-	/**
-	 * Takes an address object and passes it to the update method
-	 * @param conn The mySQL connection
-	 * @param id The id of the address the user wants to update
-	 * @param address An address object with the new number, name, city, state, and zip
-	 */
-	public static void update(Connection conn, int id, Address address){
-		try {
-			Address.update(conn, id, address.getNumber(), address.getName(), address.getCity(), address.getState(), address.getZip());
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
+	//TODO How can I leave some null but not update them aka(update some but not all)
 	/**
 	 * Updates all the fields of a given data table in the address table
 	 * @param conn The mySQL connection
@@ -202,14 +227,14 @@ public class Address {
 	 * @param zip The new zip code
 	 */
 	public static void update(Connection conn, int id, String number, String name, String city, String state, String zip){
+		Encryption encrypt = new Encryption();
 		try{
 			PreparedStatement ps = conn.prepareStatement("UPDATE address SET number=?,name=?,city=?,state=?,zip=? WHERE id = ?");
-			ps.setString(1, number);
-			ps.setString(2, name);
-			ps.setString(3, city);
-			ps.setString(4, state);
-			ps.setString(5, zip);
-			ps.setInt(6, id);
+			ps.setString(1, encrypt.encrypt(number));
+			ps.setString(2, encrypt.encrypt(name));
+			ps.setString(3, encrypt.encrypt(city));
+			ps.setString(4, encrypt.encrypt(state));
+			ps.setString(5, encrypt.encrypt(zip));
 			ps.executeUpdate();
 		}catch(Exception e){
 			System.out.println(e.getMessage());

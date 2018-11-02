@@ -51,7 +51,7 @@ public class OccupationController {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("{id}")
 	public Response getById(@PathParam("id") int id) throws SQLException{
-		Occupation occupation = Occupation.getBy(RESTController.getConnection(), Integer.toString(id));
+		Occupation occupation = Occupation.getBy(RESTController.getConnection(), Integer.toString(id), "id");
 		Gson json = new Gson();
 		return Response.ok(json.toJson(occupation), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").build();
 	}
@@ -65,7 +65,7 @@ public class OccupationController {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response insert(Occupation occupation) throws SQLException {
-		Occupation.insert(RESTController.getConnection(),  occupation);
+		Occupation.insert(RESTController.getConnection(),  occupation.getOccupation());
 		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
 	}
 
@@ -95,7 +95,7 @@ public class OccupationController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{id}")
 	public Response update(@PathParam("id") int id, Occupation occupation)throws SQLException{
-		Occupation.update(RESTController.getConnection(), id, occupation);
+		Occupation.update(RESTController.getConnection(), id, occupation.getOccupation());
 		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
 	}
 }

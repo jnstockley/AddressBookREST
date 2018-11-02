@@ -63,7 +63,7 @@ public class PersonController {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response insert(Person person) throws SQLException {
-		Person.insert(RESTController.getConnection(),  person);
+		Person.insert(RESTController.getConnection(),  person.getFirstName(), person.getMiddleInitial(), person.getLastName(), person.getAddressId(), person.getOcupationId());
 		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
 	}
 
@@ -93,7 +93,7 @@ public class PersonController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{id}")
 	public Response update(@PathParam("id") int id, Person person)throws SQLException{
-		Person.update(RESTController.getConnection(), id, person);
+		Person.update(RESTController.getConnection(), id, person.getFirstName(), person.getMiddleInitial(), person.getLastName());
 		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
 	}
 }

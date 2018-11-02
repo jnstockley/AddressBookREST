@@ -64,7 +64,7 @@ public class AddressController {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response insert(Address address) throws SQLException {
-		Address.insert(RESTController.getConnection(),  address);
+		Address.insert(RESTController.getConnection(),  address.getNumber(), address.getName(), address.getCity(), address.getState(), address.getZip());
 		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
 	}
 
@@ -94,7 +94,7 @@ public class AddressController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{id}")
 	public Response update(@PathParam("id") int id, Address address)throws SQLException{
-		Address.update(RESTController.getConnection(), id, address);
+		Address.update(RESTController.getConnection(), id, address.getNumber(), address.getName(), address.getCity(), address.getState(), address.getZip());
 		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
 	}
 }

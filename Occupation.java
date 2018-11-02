@@ -1,5 +1,4 @@
 package mysql;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,15 +12,15 @@ public class Occupation {
 	public int getId() {
 		return id;
 	}
-
+	
 	public void setId(int id) {
 		this.id = id;
 	}
-
+	
 	public String getOccupation() {
 		return occupation;
 	}
-
+	
 	public void setOccupation(String occupation) {
 		this.occupation = occupation;
 	}
@@ -32,10 +31,6 @@ public class Occupation {
 	public void print() {
 		System.out.println("ID: " + this.getId() + " " + this.getOccupation());
 	}
-	
-	public String display() {
-		return "Id: " + this.getId() + " " + this.getOccupation();
-	}
 
 	/**
 	 * Adds the occupation to a list and returns it
@@ -44,6 +39,7 @@ public class Occupation {
 	 */
 	public static List<Occupation> getAll(Connection conn){
 		List<Occupation> occupations = new ArrayList<Occupation>();
+		Encryption decrypt = new Encryption();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT id, occupation FROM occupation");
 			ResultSet rs = ps.executeQuery();
@@ -51,7 +47,7 @@ public class Occupation {
 				Occupation occupation = new Occupation();
 				int col = 1;
 				occupation.setId(rs.getInt(col++));
-				occupation.setOccupation(rs.getString(col++));
+				occupation.setOccupation(decrypt.decrypt(rs.getString(col++).getBytes()));
 				occupations.add(occupation);
 			}
 			return occupations;
@@ -69,18 +65,20 @@ public class Occupation {
 	 * @param fieldName The filed type of how the user is looking up
 	 * @return
 	 */
-	public static Occupation getBy(Connection conn, String value){
+	public static Occupation getBy(Connection conn, String value, String fieldName){
+		Encryption decrypt = new Encryption();
 		try {
 			Occupation occupation = new Occupation();
-			PreparedStatement ps = conn.prepareStatement("SELECT id, occupation FROM occupation WHERE id = ?");
+			PreparedStatement ps = conn.prepareStatement("SELECT id, occupation FROM occupation WHERE " + fieldName + "  = ?");
 			ps.setInt(1, Integer.parseInt(value));
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()){
 				int col = 1;
 				occupation.setId((rs.getInt(col++)));
-				occupation.setOccupation(rs.getString(col++));
+				occupation.setOccupation(decrypt.decrypt(rs.getString(col++).getBytes()));
 			}
 			return occupation;
+			
 		}
 		catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -88,18 +86,24 @@ public class Occupation {
 		}
 	}
 	
-	/**
-	 * Takes an occupation object and passes it to the insert method
-	 * @param conn The mySQL connection
-	 * @param occupation An occupation object with the new occupation
-	 */
-	public static void insert(Connection conn, Occupation occupation){
+	/*public static int getByName(Connection conn, String name){
+		Occupation occupation = new Occupation();
+		PreparedStatement ps;
 		try {
-			Occupation.insert(conn, occupation.getOccupation());
-		} catch (Exception e) {
+			ps = conn.prepareStatement("Select occupation FROM occupation WHERE occupation = ?");
+			ps.setString(1, name);
+		ResultSet rs = ps.executeQuery();
+		if(rs.next()){
+			int col = 1;
+			occupation.setId((rs.getInt(col++)));
+			occupation.setOccupation(rs.getString(col++));
+		}return occupation.getId();
+		} catch (SQLException e) {
 			System.out.println(e.getMessage());
+			return 0;
 		}
-	}
+		
+	}*/
 
 	/**
 	 * Uses the provided occupation and adds it to the occupation table
@@ -107,24 +111,12 @@ public class Occupation {
 	 * @param occupation The name of the occupation the user is adding
 	 */
 	public static void insert(Connection conn, String occupation){
+		Encryption encrypt = new Encryption();
+		//String occupationEncrypt = Encryption.encryptOccupation(occupation);
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO occupation (occupation) values(?)");
-			ps.setString(1, occupation);
+			ps.setString(1, encrypt.encrypt(occupation));
 			ps.execute();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-	
-	/**
-	 * Takes an occupation object and passes it to the update method
-	 * @param conn The mySQL connection
-	 * @param id The id of the occupation the user wants to update
-	 * @param occupation An occupation object with the new occupation
-	 */
-	public static void update(Connection conn, int id, Occupation occupation){
-		try {
-			Occupation.update(conn, id, occupation.getOccupation());
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -137,9 +129,10 @@ public class Occupation {
 	 * @param occupation The new occupation name
 	 */
 	public static void update(Connection conn, int id, String occupation){
+		Encryption encrypt = new Encryption();
 		try{
 			PreparedStatement ps = conn.prepareStatement("UPDATE occupation SET occupation=? WHERE id = ?");
-			ps.setString(1, occupation);
+			ps.setString(1, encrypt.encrypt(occupation));
 			ps.setInt(2, id);
 			ps.executeUpdate();
 		}catch(Exception e){

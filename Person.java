@@ -1,82 +1,126 @@
 package mysql;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO Get occupationId and addressId to work properly
 public class Person {
 	private int id;
 	private String firstName;
 	private String middleInitial;
 	private String lastName;
 	private int addressId;
-	private int occupationId;
-	private int number;
+	private int ocupationId;
+	private String number;
 	private String name;
 	private String city;
 	private String state;
-	private int zip;
+	private String zip;
 	private String occupation;
 
+	/**
+	 * 
+	 * @return
+	 */
 	public int getId() {
 		return id;
 	}
 	
+	/**
+	 * 
+	 * @param id
+	 */
 	public void setId(int id) {
 		this.id = id;
 	}
-	
+	/**
+	 * 
+	 * @return
+	 */
 	public String getFirstName() {
 		return firstName;
 	}
 	
+	/**
+	 * 
+	 * @param firstName
+	 */
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public String getMiddleInitial() {
 		return middleInitial;
 	}
 	
+	/**
+	 * 
+	 * @param middleInitial
+	 */
 	public void setMiddleInitial(String middleInitial) {
 		this.middleInitial = middleInitial;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public String getLastName() {
 		return lastName;
 	}
 	
+	/**
+	 * 
+	 * @param lastName
+	 */
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public int getAddressId() {
 		return addressId;
 	}
 	
+	/**
+	 * 
+	 * @param addressId
+	 */
 	public void setAddressId(int addressId) {
 		this.addressId = addressId;
 	}
 	
-	public int getOccupationId() {
-		return occupationId;
+	/**
+	 * 
+	 * @return
+	 */
+	public int getOcupationId() {
+		return ocupationId;
 	}
 	
-	public void setOccupationId(int ocupationId) {
-		this.occupationId = ocupationId;
+	/**
+	 * 
+	 * @param ocupationId
+	 */
+	public void setOcupationId(int ocupationId) {
+		this.ocupationId = ocupationId;
 	}
 	
-	public int getNumber(){
+	public String getNumber(){
 		return number;
 	}
 	
-	public void setNumber(int number){
+	public void setNumber(String number){
 		this.number = number;
 	}
-	
 	public String getName(){
 		return name;
 	}
@@ -101,11 +145,11 @@ public class Person {
 		this.state = state;
 	}
 	
-	public int getZip(){
+	public String getZip(){
 		return zip;
 	}
 	
-	public void setZip(int zip){
+	public void setZip(String zip){
 		this.zip = zip;
 	}
 	
@@ -124,10 +168,6 @@ public class Person {
 		System.out.println("Id: " + this.getId() + " " + this.getFirstName() + " " + this.getMiddleInitial() + " " + this.getLastName() + " " + this.getNumber() + " " + this.getName() + " " + this.getCity() + ", " + this.getState() + " " + this.getZip() + " " + this.getOccupation());
 	}
 	
-	public String display() {
-		return "Id: " + this.getId() + " " + this.getFirstName() + " " + this.getMiddleInitial() + " " + this.getLastName() + " " + this.getNumber() + " " + this.getName() + " " + this.getCity() + ", " + this.getState() + " " + this.getZip() + " " + this.getOccupation();
-	}
-	
 	/**
 	 * Prints out all the people in the person table
 	 * @param conn The mySQL connection
@@ -135,6 +175,7 @@ public class Person {
 	 */
 	public static List<Person> getAll(Connection conn){
 		List<Person> people = new ArrayList<Person>();
+		Encryption decrypt = new Encryption();
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT person.id, person.firstName, person.middleInitial, person.lastName, address.number, address.name, address.city, address.state, address.zip, occupation.occupation from person inner join address on person.addressId=address.id inner join occupation on person.occupationId=occupation.id");
 			ResultSet rs = ps.executeQuery();
@@ -142,17 +183,18 @@ public class Person {
 				Person person = new Person();
 				int col = 1;
 				person.setId(rs.getInt(col++));
-				person.setFirstName(rs.getString(col++));
-				person.setMiddleInitial(rs.getString(col++));
-				person.setLastName(rs.getString(col++));
-				person.setNumber(rs.getInt(col++));
-				person.setName(rs.getString(col++));
-				person.setCity(rs.getString(col++));
-				person.setState(rs.getString(col++));
-				person.setZip(rs.getInt(col++));
-				person.setOccupation(rs.getString(col++));
+				person.setFirstName(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setMiddleInitial(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setLastName(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setNumber(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setName(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setCity(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setState(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setZip(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setOccupation(decrypt.decrypt(rs.getString(col++).getBytes()));
 				people.add(person);
 			}
+			
 			return people;
 		}
 		catch (Exception e) {
@@ -169,6 +211,7 @@ public class Person {
 	 * @return A singular person
 	 */
 	public static Person getBy(Connection conn, String value){
+		Encryption decrypt = new Encryption();
 		try {
 			Person person = new Person();
 			PreparedStatement ps = conn.prepareStatement("SELECT person.id, person.firstName, person.middleInitial, person.lastName, address.number, address.name, address.city, address.state, address.zip, occupation.occupation from person inner join address on person.addressId=address.id inner join occupation on person.occupationId=occupation.id where person.id=?;");
@@ -177,34 +220,21 @@ public class Person {
 			if (rs.next()){
 				int col = 1;
 				person.setId(rs.getInt(col++));
-				person.setFirstName(rs.getString(col++));
-				person.setMiddleInitial(rs.getString(col++));
-				person.setLastName(rs.getString(col++));
-				person.setNumber(rs.getInt(col++));
-				person.setName(rs.getString(col++));
-				person.setCity(rs.getString(col++));
-				person.setState(rs.getString(col++));
-				person.setZip(rs.getInt(col++));
-				person.setOccupation(rs.getString(col++));
+				person.setFirstName(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setMiddleInitial(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setLastName(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setNumber(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setName(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setCity(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setState(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setZip(decrypt.decrypt(rs.getString(col++).getBytes()));
+				person.setOccupation(decrypt.decrypt(rs.getString(col++).getBytes()));
 			}
 			return person;
 		}
 		catch (Exception e) {
 			System.out.println(e.getMessage());
 			return null;
-		}
-	}
-	
-	/**
-	 * Takes a person object and passes it to the insert method
-	 * @param conn The mySQL connection
-	 * @param person A person object with the new first and last name, and middle initial
-	 */
-	public static void insert(Connection conn, Person person){
-		try {
-			Person.insert(conn, person.getFirstName(), person.getMiddleInitial(), person.getLastName(), person.getAddressId(), person.getOccupationId());
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
 		}
 	}
 
@@ -215,30 +245,16 @@ public class Person {
 	 * @param middleInitial The middle initial of the person
 	 * @param lastName The last name of the person
 	 */
-	//TODO WHAT ABOUT ADDRESSID AND OCCUPATIONID
 	public static void insert(Connection conn, String firstName, String middleInitial, String lastName, int addressId, int occupationId){
+		Encryption encrypt = new Encryption();
 		try {
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO person (firstName, middleInitial, lastName, addressId, occupationId) values(?,?,?,?,?)");
-			ps.setString(1, firstName);
-			ps.setString(2, middleInitial);
-			ps.setString(3, lastName);
-			ps.setInt(4, addressId);
-			ps.setInt(5, occupationId);
+			ps.setString(1, encrypt.encrypt(firstName));
+			ps.setString(2, encrypt.encrypt(middleInitial));
+			ps.setString(3, encrypt.encrypt(lastName));
+			ps.setString(4, encrypt.encrypt(addressId+""));
+			ps.setString(5, encrypt.encrypt(occupationId+""));
 			ps.execute();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-	
-	/**
-	 * Take a person object and passes it to the update method
-	 * @param conn The mySQL connection
-	 * @param id The id of the person the user wants to update
-	 * @param person A person object with the new first and last name, and middle initial
-	 */
-	public static void update(Connection conn, int id, Person person){
-		try {
-			Person.update(conn, id, person.getFirstName(), person.getMiddleInitial(), person.getLastName());
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -253,11 +269,12 @@ public class Person {
 	 * @param lastName The new persons last name
 	 */
 	public static void update(Connection conn, int id, String firstName, String middleInitial, String lastName){
+		Encryption encrypt = new Encryption();
 		try{
 			PreparedStatement ps = conn.prepareStatement("UPDATE person SET firstName=?,middleInitial=?,lastName=? WHERE id = ?");
-			ps.setString(1, firstName);
-			ps.setString(2, middleInitial);
-			ps.setString(3, lastName);
+			ps.setString(1, encrypt.encrypt(firstName));
+			ps.setString(2, encrypt.encrypt(middleInitial));
+			ps.setString(3, encrypt.encrypt(lastName));
 			ps.setInt(4, id);
 			ps.executeUpdate();
 		}catch(Exception e){
