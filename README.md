@@ -1,4 +1,7 @@
 # AddressBookREST
+ATTENTION!!!!! 
+Today around 2:30 CDT the mysql server will be taken offline for several hours! I am going to consolidating my servers. I am hoping to have the mySQL server back up around 8:00 PM CDT at the latest! All data on the server will be deleted!
+
 Setup:
 1. Create mySQL server
 2. Install tomcat on server and add the AddressBookREST.war file to tomcat
