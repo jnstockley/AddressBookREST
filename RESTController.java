@@ -38,11 +38,11 @@ public class RESTController {
 		}
 
 		try{
-			conn = DriverManager.getConnection("jdbc:mysql://10.0.0.183:8080/mydb",user,password);
+			conn = DriverManager.getConnection("jdbc:mysql://internal ip:8080/mydb",user,password);
 			return conn;
 		}catch(SQLException e){
 			try {
-				conn = DriverManager.getConnection("jdbc:mysql://jackstockley.ddns.net:8080/mydb",user,password);
+				conn = DriverManager.getConnection("jdbc:mysql://external ip:8080/mydb",user,password);
 				return conn;
 			}
 			catch (SQLException e2){
