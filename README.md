@@ -1,5 +1,6 @@
 # AddressBookREST
-Extremely Overdue Update!!!!! I lot has happened since I last posted an update! I had mys server up for a bit but currently it is down due to a corrupted kernel on my sevrer! I am trying right now to recover the data on the server to save reinstall time! Wish me luck. Thanks!
+Extremely Overdue Update!!!!! I lot has happened since I last posted an update! I had mys server up for a bit but currently it is down due to a corrupted kernel on my sevrer! I am trying right now to recover the data on the server to save reinstall time! Wish me luck. I am also going to be working on rewritng this program to add new features to it once I have finished the CLI version! Thanks!
+
 Setup:
 1. Create mySQL server
 2. Install tomcat on server and add the AddressBookREST.war file to tomcat
