@@ -112,7 +112,7 @@ public class Occupation {
 	 * @param conn The mySQL connection
 	 * @param occupation The name of the occupation the user is adding
 	 */
-	public static void insert(Connection conn, String occupation){
+	public static int insert(Connection conn, String occupation){
 		//String occupationEncrypt = Encryption.encryptOccupation(occupation);
 		try {
 			//Encryption encrypt = new Encryption();
@@ -120,8 +120,19 @@ public class Occupation {
 			ps.setString(1, occupation);
 			//ps.setString(1, encrypt.encryptText(occupation,encrypt.getPublic("KeyPair/publicKey")));
 			ps.execute();
+			
+			// get id of created occupation
+			ps = conn.prepareStatement("SELECT id FROM occupation where occupation = ?");
+			ps.setString(1, occupation);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()){
+				int id = rs.getInt(1);
+				return id;
+			}
+			return 0;
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
+			return 0;
 		}
 	}
 

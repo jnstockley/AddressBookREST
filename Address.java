@@ -211,7 +211,7 @@ public class Address {
 	 * @param state The state the user entered
 	 * @param zip The zip code the user entered
 	 */
-	public static void insert(Connection conn, String number, String name, String city, String state, String zip){
+	public static int insert(Connection conn, String number, String name, String city, String state, String zip){
 		try {
 			//Encryption encrypt = new Encryption();
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO address (number, name, city, state, zip) values(?,?,?,?,?)");
@@ -226,8 +226,18 @@ public class Address {
 			ps.setString(4, state);
 			ps.setString(5, zip);
 			ps.execute();
+			
+			ps = conn.prepareStatement("SELECT id FROM address where number = ?");
+			ps.setString(1, number);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()){
+				int id = rs.getInt(1);
+				return id;
+			}
+			return 0;
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
+			return 0;
 		}
 	}
 

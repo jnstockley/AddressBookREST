@@ -38,7 +38,7 @@ public class OccupationController {
 	public Response getAll() throws SQLException{
 		List<Occupation> occupations = Occupation.getAll(RESTController.getConnection());
 		Gson json = new Gson();
-		return Response.ok(json.toJson(occupations), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok(json.toJson(occupations), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 
 	/**
@@ -53,7 +53,7 @@ public class OccupationController {
 	public Response getById(@PathParam("id") int id) throws SQLException{
 		Occupation occupation = Occupation.getBy(RESTController.getConnection(), Integer.toString(id), "id");
 		Gson json = new Gson();
-		return Response.ok(json.toJson(occupation), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok(json.toJson(occupation), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 
 	/**
@@ -65,8 +65,9 @@ public class OccupationController {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response insert(Occupation occupation) throws SQLException {
-		Occupation.insert(RESTController.getConnection(),  occupation.getOccupation());
-		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
+		Gson json = new Gson();
+		occupation.setId(Occupation.insert(RESTController.getConnection(),  occupation.getOccupation()));
+		return Response.ok(json.toJson(occupation)).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 
 	/**
@@ -80,7 +81,7 @@ public class OccupationController {
 	@Path("{id}")
 	public Response deleteById(@PathParam("id") int id) throws SQLException{
 		Occupation.remove(RESTController.getConnection(), id);
-		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok().header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 	
 	/**
@@ -95,7 +96,8 @@ public class OccupationController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{id}")
 	public Response update(@PathParam("id") int id, Occupation occupation)throws SQLException{
+		Gson json = new Gson();
 		Occupation.update(RESTController.getConnection(), id, occupation.getOccupation());
-		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok(json.toJson(occupation)).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 }

@@ -37,7 +37,7 @@ public class AddressController {
 	public Response getAll() throws SQLException{
 		List<Address> addresses = Address.getAll(RESTController.getConnection());
 		Gson json = new Gson();
-		return Response.ok(json.toJson(addresses), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok(json.toJson(addresses), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 
 	/**
@@ -52,7 +52,7 @@ public class AddressController {
 	public Response getById(@PathParam("id") int id) throws SQLException{
 		Address address = Address.getBy(RESTController.getConnection(), Integer.toString(id), "id");
 		Gson json = new Gson();
-		return Response.ok(json.toJson(address), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok(json.toJson(address), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 
 	/**
@@ -64,8 +64,9 @@ public class AddressController {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response insert(Address address) throws SQLException {
-		Address.insert(RESTController.getConnection(),  address.getNumber(), address.getName(), address.getCity(), address.getState(), address.getZip());
-		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
+		Gson json = new Gson();
+		address.setId(Address.insert(RESTController.getConnection(),  address.getNumber(), address.getName(), address.getCity(), address.getState(), address.getZip()));
+		return Response.ok(json.toJson(address)).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 
 	/**
@@ -79,7 +80,7 @@ public class AddressController {
 	@Path("{id}")
 	public Response deleteById(@PathParam("id") int id) throws SQLException{
 		Address.remove(RESTController.getConnection(), id);
-		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok().header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 	
 	/**
@@ -94,7 +95,8 @@ public class AddressController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{id}")
 	public Response update(@PathParam("id") int id, Address address)throws SQLException{
+		Gson json = new Gson();
 		Address.update(RESTController.getConnection(), id, address.getNumber(), address.getName(), address.getCity(), address.getState(), address.getZip());
-		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok(json.toJson(address)).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 }

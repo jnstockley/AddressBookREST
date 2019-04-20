@@ -102,7 +102,7 @@ public class Person {
 	 * 
 	 * @return
 	 */
-	public int getOcupationId() {
+	public int getOccupationId() {
 		return ocupationId;
 	}
 	
@@ -110,7 +110,7 @@ public class Person {
 	 * 
 	 * @param ocupationId
 	 */
-	public void setOcupationId(int ocupationId) {
+	public void setOccupationId(int ocupationId) {
 		this.ocupationId = ocupationId;
 	}
 	
@@ -177,7 +177,7 @@ public class Person {
 		List<Person> people = new ArrayList<Person>();
 		try {
 			//Encryption decrypt = new Encryption();
-			PreparedStatement ps = conn.prepareStatement("SELECT person.id, person.firstName, person.middleInitial, person.lastName, address.number, address.name, address.city, address.state, address.zip, occupation.occupation from person inner join address on person.addressId=address.id inner join occupation on person.occupationId=occupation.id");
+			PreparedStatement ps = conn.prepareStatement("SELECT person.id, person.firstName, person.middleInitial, person.lastName, address.number, address.name, address.city, address.state, address.zip, occupation.occupation, address.id, occupation.id from person inner join address on person.addressId=address.id inner join occupation on person.occupationId=occupation.id");
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()){
 				Person person = new Person();
@@ -201,6 +201,8 @@ public class Person {
 				person.setState(rs.getString(col++));
 				person.setZip(rs.getString(col++));
 				person.setOccupation(rs.getString(col++));
+				person.setAddressId(rs.getInt(col++));
+				person.setOccupationId(rs.getInt(col++));
 				people.add(person);
 			}
 			return people;
@@ -222,7 +224,7 @@ public class Person {
 		try {
 			//Encryption decrypt = new Encryption();
 			Person person = new Person();
-			PreparedStatement ps = conn.prepareStatement("SELECT person.id, person.firstName, person.middleInitial, person.lastName, address.number, address.name, address.city, address.state, address.zip, occupation.occupation from person inner join address on person.addressId=address.id inner join occupation on person.occupationId=occupation.id where person.id=?;");
+			PreparedStatement ps = conn.prepareStatement("SELECT person.id, person.firstName, person.middleInitial, person.lastName, address.number, address.name, address.city, address.state, address.zip, occupation.occupation, address.id, occupation.id from person inner join address on person.addressId=address.id inner join occupation on person.occupationId=occupation.id where person.id=?;");
 			ps.setInt(1, Integer.parseInt(value));
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()){
@@ -246,6 +248,8 @@ public class Person {
 				person.setState(rs.getString(col++));
 				person.setZip(rs.getString(col++));
 				person.setOccupation(rs.getString(col++));
+				person.setAddressId(rs.getInt(col++));
+				person.setOccupationId(rs.getInt(col++));
 			}
 			return person;
 		}
@@ -262,7 +266,7 @@ public class Person {
 	 * @param middleInitial The middle initial of the person
 	 * @param lastName The last name of the person
 	 */
-	public static void insert(Connection conn, String firstName, String middleInitial, String lastName, int addressId, int occupationId){
+	public static int insert(Connection conn, String firstName, String middleInitial, String lastName, int addressId, int occupationId){
 		try {
 			//Encryption encrypt = new Encryption();
 			PreparedStatement ps = conn.prepareStatement("INSERT INTO person (firstName, middleInitial, lastName, addressId, occupationId) values(?,?,?,?,?)");
@@ -275,8 +279,17 @@ public class Person {
 			ps.setInt(4, addressId);
 			ps.setInt(5, occupationId);
 			ps.execute();
+			ps = conn.prepareStatement("SELECT id FROM person where firstName = ?");
+			ps.setString(1, firstName);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()){
+				int id = rs.getInt(1);
+				return id;
+			}
+			return 0;
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
+			return 0;
 		}
 	}
 
@@ -300,6 +313,7 @@ public class Person {
 			ps.setString(3, lastName);
 			ps.setInt(4, id);
 			ps.executeUpdate();
+			
 		}catch(Exception e){
 			System.out.println(e.getMessage());
 		}

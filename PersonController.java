@@ -36,7 +36,7 @@ public class PersonController {
 	public Response getAll() throws SQLException{
 		List<Person> people = Person.getAll(RESTController.getConnection());
 		Gson json = new Gson();
-		return Response.ok(json.toJson(people), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok(json.toJson(people), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class PersonController {
 	public Response getById(@PathParam("id") int id) throws SQLException{
 		Person person = Person.getBy(RESTController.getConnection(), Integer.toString(id));
 		Gson json = new Gson();
-		return Response.ok(json.toJson(person), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok(json.toJson(person), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 
 	/**
@@ -63,8 +63,9 @@ public class PersonController {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response insert(Person person) throws SQLException {
-		Person.insert(RESTController.getConnection(),  person.getFirstName(), person.getMiddleInitial(), person.getLastName(), person.getAddressId(), person.getOcupationId());
-		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
+		Gson json = new Gson();
+		person.setId(Person.insert(RESTController.getConnection(),  person.getFirstName(), person.getMiddleInitial(), person.getLastName(), person.getAddressId(), person.getOccupationId()));
+		return Response.ok(json.toJson(person)).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 
 	/**
@@ -76,9 +77,9 @@ public class PersonController {
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("{id}")
-	public Response deleteById(@PathParam("id") int id) throws SQLException{
+	public Response deleteById(@PathParam("id") int id) throws SQLException{ 
 		Person.remove(RESTController.getConnection(), id);
-		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok().header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 	
 	/**
@@ -93,7 +94,8 @@ public class PersonController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("{id}")
 	public Response update(@PathParam("id") int id, Person person)throws SQLException{
+		Gson json = new Gson();
 		Person.update(RESTController.getConnection(), id, person.getFirstName(), person.getMiddleInitial(), person.getLastName());
-		return Response.ok().header("Access-Control-Allow-Origin", "*").build();
+		return Response.ok(json.toJson(person)).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
 	}
 }
