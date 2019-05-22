@@ -17,8 +17,8 @@ import java.sql.SQLException;
 
 public class RESTController {
 	public static String IP; //NULL Variables for the mySQL server IP
-	public static final String user = "User Name"; //Username for the mySQL sever
-	public static final String password = "Password"; //Password for the mySQL server
+	public static final String user = "Jack"; //Username for the mySQL sever
+	public static final String password = "Dr1v3r0o"; //Password for the mySQL server
 	static Connection conn; //NULL connection to get connected to the mySQL server
 
 	/**
@@ -38,11 +38,11 @@ public class RESTController {
 		}
 
 		try{
-			conn = DriverManager.getConnection("jdbc:mysql://10.0.0.50:3306/mydb",user,password);
+			conn = DriverManager.getConnection("jdbc:mysql://10.0.0.173:3306/mydb?useSSL=false",user,password);
 			return conn;
 		}catch(SQLException e){
 			try {
-				conn = DriverManager.getConnection("jdbc:mysql://jackstockley.ddns.net:3306/mydb",user,password);
+				conn = DriverManager.getConnection("jdbc:mysql://jackstockley.ddns.net:3306/mydb?useSSL=false",user,password);
 				return conn;
 			}
 			catch (SQLException e2){

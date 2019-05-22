@@ -8,7 +8,7 @@ import com.google.gson.Gson;
 
 public class Helper {
 
-	private final static String INTERNALIP = "10.0.0.50";
+	private final static String INTERNALIP = "10.0.0.173";
 	private final static String EXTERNALIP = "jackstockley.ddns.net";
 	private final static String PORT = "3360";
 	

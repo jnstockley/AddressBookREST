@@ -11,7 +11,7 @@ public class Person {
 	private String middleInitial;
 	private String lastName;
 	private int addressId;
-	private int ocupationId;
+	private int occupationId;
 	private String number;
 	private String name;
 	private String city;
@@ -103,15 +103,15 @@ public class Person {
 	 * @return
 	 */
 	public int getOccupationId() {
-		return ocupationId;
+		return occupationId;
 	}
 	
 	/**
 	 * 
-	 * @param ocupationId
+	 * @param occupationId
 	 */
-	public void setOccupationId(int ocupationId) {
-		this.ocupationId = ocupationId;
+	public void setOccupationId(int occupationId) {
+		this.occupationId = occupationId;
 	}
 	
 	public String getNumber(){
