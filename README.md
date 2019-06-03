@@ -1,4 +1,7 @@
 # AddressBookREST
+
+UPDATE!!!! I am currently working on updating Address Book REST! Look forward to an update in the next few weeks.
+
 I have posted a minor update with some bug fixes and have made some improvements to help with my address book ui program that is upcoming. I will hopefully start making this program a whole lot better this summer when I am done with school. 
 
 Features I plan to add:
