@@ -1,15 +1,7 @@
 # AddressBookREST
 
-UPDATE!!!! I am currently working on updating Address Book REST! Look forward to an update in the next few weeks.
+UPDATE!! So..... It's been almost a year since there has been any activity on this repositroy... sorry about that!
 
-I have posted a minor update with some bug fixes and have made some improvements to help with my address book ui program that is upcoming. I will hopefully start making this program a whole lot better this summer when I am done with school. 
+I do have some important updates to share!
 
-Features I plan to add:
-1. Check for duplicate entries
-2. Rewrite back end to fix bugs
-3. Allow for easier changing of server specifics.
-4. Encryption
-
-I will update the readme when I finish the big update coming this summer! Hopefully.
-
-Any other questions tweet me on twitter @jackstockley_ and Ill add it here
+I have been busy on working on a new version of the CLI version of the program! BTW Version 2.0 is out for that at : https://github.com/jnstockley/AddressBook Now that that version is completed I will start working on an updated version of the REST interface while adding new feratures to be as similar as possible to the CLI and with major bug fixes and realibilty imporvements! Stay tuned!
