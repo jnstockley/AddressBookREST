@@ -36,8 +36,8 @@ This is the biggest update since I have release the first address book!
  - What operating systems are supported?
    - Pretty much any operating system that supports java version 8 and tomcat 9. That includes Mac, Windows, Linux and possibly Andriod!
    
-- When will the AngularJS version of this be updated?
-  - It already is updated working with the new RESTful service and with new features and bug fixes! Check it out at: http://jackstockleyiowa.ddns.net/AddressBookUI
+- When will the AngularJS and CLI versions of this be updated?
+  - All version are upadated and running! You can check them out on my profile home page!
   
 - Will you continue to update this software with new features and bug fixes?
   - Yes of course, I do still have some features I plan on adding at some point. Right now I am planning on updating the backend on both the REST interface and CLI and converting the CLI into a maven project
