@@ -1,7 +1,9 @@
-package mysql;
+package com.jackstockley.addressbookrest;
 
-import java.sql.SQLException;
+import java.sql.Connection;
 import java.util.List;
+import com.google.gson.Gson;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -12,91 +14,156 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import com.google.gson.Gson;
+
 /**
- * @Date May 7, 2018
- * 
- * @Description An interface that allows a user to get, insert, update, delete address data from a mySQL database also known as a REST Interface
- * 
- * @author Jack Stockley
- * 
- * @version 1.0
+ * Manages the RESTful side of the address object
+ * @author jackstockley
  *
  */
 
-@Path("/address")
+@Path("address")
 public class AddressController {
 
+	private Connection conn = RESTController.getConnection();
+
 	/**
-	 * Returns all the address in the database
-	 * @return A list of addresses
-	 * @throws SQLException
+	 * Returns JSON for all the addresses in the database or status code 204 if no addresses in databse
+	 * @return Resposne with either 200, 204, or 500
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAll() throws SQLException{
-		List<Address> addresses = Address.getAll(RESTController.getConnection());
-		Gson json = new Gson();
-		return Response.ok(json.toJson(addresses), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
+	public Response getAllAddresses() {
+		try {
+			List<Address> addresses = Address.getAddress(conn);
+			if(addresses!=null) {
+				Gson json = new Gson();
+				return Response.ok(json.toJson(addresses), MediaType.APPLICATION_JSON).build();
+			}else {
+				return Response.noContent().build();
+			}
+		}catch(Exception e) {
+			return Response.status(500, Helper.log(e, "AddressController.java", "getAllAddresses()")).build();
+		}
 	}
 
 	/**
-	 * Returns a singular address based on the id a user passes
-	 * @param id The id of the address the user wants returned
-	 * @return A singular address
-	 * @throws SQLException
+	 * Returns JSON for all the addresses in the database with similar field and data or status code 204 if no similar addresses
+	 * @param field Field to match data with
+	 * @param data Similar data between addresses
+	 * @return Response with either 200, 204, or 500
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("{field}/{data}")
+	public Response getSimilarAddresses(@PathParam("field") String field, @PathParam("data") String data) {
+		try{
+			if(field.equals("date") || field.equals("time")) {
+				while(data.contains("*")) {
+					data = data.replace("*", "%");
+				}
+			}
+			List<Address> addresses = Address.getAddress(conn,field, data);
+			if(addresses!=null) {
+				Gson json = new Gson();
+				return Response.ok(json.toJson(addresses), MediaType.APPLICATION_JSON).build();
+			}else {
+				return Response.noContent().build();
+			}
+		}catch(Exception e) {
+			return Response.status(500, Helper.log(e, "AddressController.java", "getSimilarAddresses()")).build();
+		}
+	}
+
+	/**
+	 * Returns JSON for a singular address in the database or 204 if no address matches the id
+	 * @param id ID of the address to be returned
+	 * @return Response with either 200, 204, or 500
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("{id}")
-	public Response getById(@PathParam("id") int id) throws SQLException{
-		Address address = Address.getBy(RESTController.getConnection(), Integer.toString(id), "id");
-		Gson json = new Gson();
-		return Response.ok(json.toJson(address), MediaType.APPLICATION_JSON).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
+	public Response getSingularAddress(@PathParam("id") int id) {
+		try {
+			Address address = Address.getAddress(conn, id);
+			if(address!=null) {
+				Gson json = new Gson();
+				return Response.ok(json.toJson(address), MediaType.APPLICATION_JSON).build();
+			}else {
+				return Response.noContent().build();
+			}
+		}catch(Exception e) {
+			return Response.status(500, Helper.log(e, "AddressController.java", "getSingularAddress()")).build();
+		}
 	}
 
 	/**
-	 * Inserts an address into the database
-	 * @param address An address object
-	 * @return A response telling the user the task was good or bad
-	 * @throws SQLException
-	 */
-	@PUT
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response insert(Address address) throws SQLException {
-		Gson json = new Gson();
-		address.setId(Address.insert(RESTController.getConnection(),  address.getNumber(), address.getName(), address.getCity(), address.getState(), address.getZip()));
-		return Response.ok(json.toJson(address)).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
-	}
-
-	/**
-	 * Removes an address from the database using the given id
-	 * @param id The id of the address to remove
-	 * @return A response telling the user the task was good or bad
-	 * @throws SQLException
-	 */
-	@DELETE
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("{id}")
-	public Response deleteById(@PathParam("id") int id) throws SQLException{
-		Address.remove(RESTController.getConnection(), id);
-		return Response.ok().header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
-	}
-	
-	/**
-	 * Updates an address from the database using the given id
-	 * @param id The id of the address to update
-	 * @param address An address object with the new number, name, city, state, and zip
-	 * @return A response telling the user the task was good or bad
-	 * @throws SQLException
+	 * Allows user to sumbit a POST request to update an address on the database
+	 * @param id ID of the address to be updated
+	 * @param address The new address that will replace the current address
+	 * @return Response 200 and new address if updated otherwise 500
 	 */
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("{id}")
-	public Response update(@PathParam("id") int id, Address address)throws SQLException{
-		Gson json = new Gson();
-		Address.update(RESTController.getConnection(), id, address.getNumber(), address.getName(), address.getCity(), address.getState(), address.getZip());
-		return Response.ok(json.toJson(address)).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT").build();
+	@Path("update/{id}") //Makes sense???
+	public Response updateAddress(@PathParam("id") int id, Address address) {
+		try {
+			Address newAddress = Address.updateAddress(conn, id, address.getNumber(), address.getStreet(), address.getCity(), address.getState(), address.getZip());
+			if(newAddress!=null) {
+				Gson json = new Gson();
+				return Response.ok(json.toJson(newAddress), MediaType.APPLICATION_JSON).build();
+			}else {
+				return Response.status(500, Helper.log("Error updating address at ID: " + id + "!", "AddressController.java", "updateAddress()")).build();
+			}
+		}catch(Exception e) {
+			return Response.status(500, e.getMessage()).build();
+		}
+	}
+
+	/**
+	 * Allows user to sumbit a PUT reuest to create a new address on the database
+	 * @param address The new address to be added
+	 * @return Response 200 and new address if added otherwise 500
+	 */
+	@PUT
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("insert")
+	public Response insertAddress(Address address) {
+		try{
+			Address newAddress = Address.insertAddress(conn, address.getNumber(), address.getStreet(), address.getCity(), address.getState(), address.getZip());
+			if(newAddress!=null) {
+				Gson json = new Gson();
+				return Response.ok(json.toJson(newAddress), MediaType.APPLICATION_JSON).build();
+			}else {
+				return Response.status(500, Helper.log("Error inserting address!", "AddressController.java", "insertAddress()")).build();
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			return Response.status(500, Helper.log(e, "AddressController.java", "insertAddress()")).build();
+		}
+	}
+
+	/**
+	 * Allows user to submit a DELETE request to delete an address on the databse
+	 * @param field The field to match with the address
+	 * @param data Data of matchin field in address
+	 * @return Response with JSON saying removed: true otherwise 500
+	 */
+	@DELETE
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("remove/{field}/{data}")
+	public Response removeAddress(@PathParam("field") String field, @PathParam("data") String data) {
+		try{
+			boolean removed = Address.removeAddress(conn, field, data);
+			if(removed) {
+				return Response.ok("{\"removed\": \"true\"}").build();
+			}else {
+				return Response.status(500, Helper.log("Error removing address with " + field + " and data " + data + "!", "AddressController.java", "removeAddress()")).build();
+			}
+		}catch(Exception e) {
+			return Response.status(500, Helper.log(e, "AddressController.java", "removeAddress()")).build();
+		}
 	}
 }

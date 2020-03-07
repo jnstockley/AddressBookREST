@@ -1,61 +1,68 @@
-package mysql;
+package com.jackstockley.addressbookrest;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.text.MessageFormat;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
+
 
 /**
- * @Date May 7, 2018
- * 
- * @Description Sets up the mySQL connection for the REST Interface
- * 
- * @author Jack Stockley
- * 
- * @version 1.0
+ * Handles making the connection between the RESTfull web service and the MySQL server
+ * @author jackstockley
+ * @version 2.00
  *
  */
-
+@Path("connect")
 public class RESTController {
-	public static String IP; //NULL Variables for the mySQL server IP
-	public static final String user = "Jack"; //Username for the mySQL sever
-	public static final String password = "Dr1v3r0o"; //Password for the mySQL server
-	static Connection conn; //NULL connection to get connected to the mySQL server
+
+	private static Connection conn = null;
 
 	/**
-	 * Gets a connection to server
-	 * @return The mySQL connection
-	 * @throws SQLException
+	 * Checks if the connection is null and if true returns test server else returns conn
+	 * @return The MySQL connection
 	 */
-	static Connection getConnection() throws SQLException {
-		if (conn != null) {
-			return conn;
-		}
+	public static Connection getConnection() {
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
-
-		}
-		catch (Exception e3){
-		}
-
-		try{
-			conn = DriverManager.getConnection("jdbc:mysql://10.0.0.173:3306/mydb?useSSL=false",user,password);
-			return conn;
-		}catch(SQLException e){
-			try {
-				conn = DriverManager.getConnection("jdbc:mysql://jackstockley.ddns.net:3306/mydb?useSSL=false",user,password);
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			if(conn==null) {
+				conn = DriverManager.getConnection("jdbc:mysql://jackstockleyiowa.ddns.net/addressBook?user=Jack&password=Dr1v3r0o");
+				return conn;
+			}else {
 				return conn;
 			}
-			catch (SQLException e2){
-				try{
-				conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mydb", user, password);
-				}catch (Exception e5){
-					throw e5;
-				}
-			}	
-			catch (Exception e3){
-				throw e3;
-			}
+		}catch(Exception e) {
+			Helper.log(e, "RESTController.java", "getConnection()");
+			return null;
 		}
-		return conn;
+	}
+
+	/**
+	 * Allows user to use REST server to save a connection to file
+	 * @param server The server address
+	 * @param database The database name
+	 * @param userName The userName for the database
+	 * @param password The password for the database
+	 * @return Response if the connection was saved or not
+	 */
+	@GET
+	@Path("{server}/{database}/{userName}/{password}")
+	public Response setUpConnection(@PathParam("server") String server, @PathParam("database") String database, @PathParam("userName") String userName, @PathParam("password") String password) {
+		try{
+			String connection = MessageFormat.format("jdbc:mysql://{0}/{1}?user={2}&password={3}", new Object[] { server, database, userName, password});
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			conn = DriverManager.getConnection(connection);
+			if(conn.isValid(1)) {
+				return Response.ok("Connection set up with server " + server + " and database " + database + " and user " + userName).build();
+			}else {
+				return Response.status(500, "Error creating connection to server!").build();
+			}
+		}catch(Exception e) {
+			return Response.status(500, Helper.log(e, "RESTController.java", "setUpConnection()")).build();
+
+		}
 	}
 }
