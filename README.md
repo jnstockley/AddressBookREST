@@ -34,7 +34,7 @@ This is the biggest update since I have release the first address book!
     - You need to have Java 8 installed and a tomcat 9 install. After thats dont place the .war file into the webapps folder in tomcat and start tomcat!
  
  - What operating systems are supported?
-   - Pretty much any operating system that supports java version 8 and tomcat 9. That included Mac, Windows, Linux and possibly Andriod!
+   - Pretty much any operating system that supports java version 8 and tomcat 9. That includes Mac, Windows, Linux and possibly Andriod!
    
 - When will the AngularJS version of this be updated?
   - It already is updated working with the new RESTful service and with new features and bug fixes! Check it out at: http://jackstockleyiowa.ddns.net/AddressBookUI
