@@ -29,7 +29,7 @@ public class RESTController {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			if(conn==null) {
-				conn = DriverManager.getConnection("jdbc:mysql://jackstockleyiowa.ddns.net/addressBook?user=Jack&password=password");
+				conn = DriverManager.getConnection("jdbc:mysql://jackstockleyiowa.ddns.net/addressBook?user=Jack&password=password&serverTimezone=UTC");
 				return conn;
 			}else {
 				return conn;
