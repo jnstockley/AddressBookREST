@@ -1,4 +1,8 @@
 # AddressBookREST
+
+## Version 2.5
+As some of you may know I have recently started to split parts of the program apart from eachother. I have recently released the new and improved backend of the program at https://github.com/jnstockley/AddressBook. I am currently startting to rewirte the CLI with the same improvements and also to include the new and improved backend. These same improvemnts will come to the REST interface shortly after the CLI. Stay tuned!
+
 Verison 2.0 has been released!
 
 This is the biggest update since I have release the first address book!
