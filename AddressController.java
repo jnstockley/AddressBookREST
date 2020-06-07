@@ -1,9 +1,9 @@
-package com.jackstockley.addressbookrest;
+package com.jackstockley.AddressBookREST;
 
 import java.sql.Connection;
 import java.util.List;
 import com.google.gson.Gson;
-
+import jackstockley.addressbook.*;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -18,23 +18,24 @@ import javax.ws.rs.core.Response;
 /**
  * Manages the RESTful side of the address object
  * @author jackstockley
- *
+ * @version 2.6
  */
 
 @Path("address")
 public class AddressController {
 
+	private Address addressHelper = new Address();
 	private Connection conn = RESTController.getConnection();
 
 	/**
 	 * Returns JSON for all the addresses in the database or status code 204 if no addresses in databse
-	 * @return Resposne with either 200, 204, or 500
+	 * @return Response with either 200, 204, or 500
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAllAddresses() {
 		try {
-			List<Address> addresses = Address.getAddress(conn);
+			List<Address> addresses = addressHelper.getAllAddresses(conn);
 			if(addresses!=null) {
 				Gson json = new Gson();
 				return Response.ok(json.toJson(addresses), MediaType.APPLICATION_JSON).build();
@@ -42,7 +43,8 @@ public class AddressController {
 				return Response.noContent().build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, Helper.log(e, "AddressController.java", "getAllAddresses()")).build();
+			e.printStackTrace();
+			return Response.status(500).build();
 		}
 	}
 
@@ -62,7 +64,7 @@ public class AddressController {
 					data = data.replace("*", "%");
 				}
 			}
-			List<Address> addresses = Address.getAddress(conn,field, data);
+			List<Address> addresses = addressHelper.getSimilarAddress(conn,field, data);
 			if(addresses!=null) {
 				Gson json = new Gson();
 				return Response.ok(json.toJson(addresses), MediaType.APPLICATION_JSON).build();
@@ -70,7 +72,7 @@ public class AddressController {
 				return Response.noContent().build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, Helper.log(e, "AddressController.java", "getSimilarAddresses()")).build();
+			return Response.status(500).build();
 		}
 	}
 
@@ -84,7 +86,7 @@ public class AddressController {
 	@Path("{id}")
 	public Response getSingularAddress(@PathParam("id") int id) {
 		try {
-			Address address = Address.getAddress(conn, id);
+			Address address = addressHelper.getSingularAddress(conn, id);
 			if(address!=null) {
 				Gson json = new Gson();
 				return Response.ok(json.toJson(address), MediaType.APPLICATION_JSON).build();
@@ -92,7 +94,7 @@ public class AddressController {
 				return Response.noContent().build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, Helper.log(e, "AddressController.java", "getSingularAddress()")).build();
+			return Response.status(500).build();
 		}
 	}
 
@@ -108,15 +110,15 @@ public class AddressController {
 	@Path("update/{id}") //Makes sense???
 	public Response updateAddress(@PathParam("id") int id, Address address) {
 		try {
-			Address newAddress = Address.updateAddress(conn, id, address.getNumber(), address.getStreet(), address.getCity(), address.getState(), address.getZip());
+			Address newAddress = addressHelper.updateAddress(conn, id, address);
 			if(newAddress!=null) {
 				Gson json = new Gson();
 				return Response.ok(json.toJson(newAddress), MediaType.APPLICATION_JSON).build();
 			}else {
-				return Response.status(500, Helper.log("Error updating address at ID: " + id + "!", "AddressController.java", "updateAddress()")).build();
+				return Response.status(500).build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, e.getMessage()).build();
+			return Response.status(500).build();
 		}
 	}
 
@@ -131,39 +133,38 @@ public class AddressController {
 	@Path("insert")
 	public Response insertAddress(Address address) {
 		try{
-			Address newAddress = Address.insertAddress(conn, address.getNumber(), address.getStreet(), address.getCity(), address.getState(), address.getZip());
+			Address newAddress = addressHelper.insertAddress(conn, address);
 			if(newAddress!=null) {
 				Gson json = new Gson();
 				return Response.ok(json.toJson(newAddress), MediaType.APPLICATION_JSON).build();
 			}else {
-				return Response.status(500, Helper.log("Error inserting address!", "AddressController.java", "insertAddress()")).build();
+				return Response.status(500).build();
 			}
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			return Response.status(500, Helper.log(e, "AddressController.java", "insertAddress()")).build();
+			return Response.status(500).build();
 		}
 	}
 
 	/**
 	 * Allows user to submit a DELETE request to delete an address on the databse
-	 * @param field The field to match with the address
-	 * @param data Data of matchin field in address
+	 * @param id The id of the address
 	 * @return Response with JSON saying removed: true otherwise 500
 	 */
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("remove/{field}/{data}")
-	public Response removeAddress(@PathParam("field") String field, @PathParam("data") String data) {
+	@Path("remove/{id}")
+	public Response removeAddress(@PathParam("id") int id) {
 		try{
-			boolean removed = Address.removeAddress(conn, field, data);
+			boolean removed = addressHelper.removeAddress(conn, id);
 			if(removed) {
 				return Response.ok("{\"removed\": \"true\"}").build();
 			}else {
-				return Response.status(500, Helper.log("Error removing address with " + field + " and data " + data + "!", "AddressController.java", "removeAddress()")).build();
+				return Response.status(500).build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, Helper.log(e, "AddressController.java", "removeAddress()")).build();
+			return Response.status(500).build();
 		}
 	}
 }

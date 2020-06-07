@@ -1,9 +1,9 @@
-package com.jackstockley.addressbookrest;
+package com.jackstockley.AddressBookREST;
 
 import java.sql.Connection;
 import java.util.List;
 import com.google.gson.Gson;
-
+import jackstockley.addressbook.*;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -18,12 +18,13 @@ import javax.ws.rs.core.Response;
 /**
  * Manages the RESTful side of the person object
  * @author jackstockley
- * @version 2.00
+ * @version 2.6
  *
  */
 @Path("person")
 public class PersonController {
 
+	private Person personHelper = new Person();
 	private Connection conn = RESTController.getConnection();
 
 	/**
@@ -34,7 +35,7 @@ public class PersonController {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAllPeople() {
 		try {
-			List<Person> people = Person.getPerson(conn);
+			List<Person> people = personHelper.getAllPeople(conn);
 			if(!people.isEmpty()) {
 				Gson json = new Gson();
 				//Response.ok().allow("GET");
@@ -43,7 +44,7 @@ public class PersonController {
 				return Response.noContent().build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, Helper.log(e, "PersonController.java", "getAllPeople()")).build();
+			return Response.status(500).build();
 		}
 	}
 
@@ -61,7 +62,7 @@ public class PersonController {
 			if(field.equals("date") || field.equals("time")) {
 				data = data.replace("*", "%");
 			}
-			List<Person> people = Person.getPerson(conn, field, data);
+			List<Person> people = personHelper.getSimilarPeople(conn, field, data);
 			if(people!=null) {
 				Gson json = new Gson();
 				return Response.ok(json.toJson(people), MediaType.APPLICATION_JSON).build();
@@ -69,7 +70,7 @@ public class PersonController {
 				return Response.noContent().build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, Helper.log(e, "PersonController.java", "getSimilarPeople()")).build();
+			return Response.status(500).build();
 		}
 	}
 
@@ -83,7 +84,7 @@ public class PersonController {
 	@Path("{id}")
 	public Response getSingularPerson(@PathParam("id") int id) {
 		try {
-			Person person = Person.getPerson(conn, id);
+			Person person = personHelper.getSingularPerson(conn, id);
 			if(person!=null) {
 				Gson json = new Gson();
 				return Response.ok(json.toJson(person), MediaType.APPLICATION_JSON).build();
@@ -91,7 +92,7 @@ public class PersonController {
 				return Response.noContent().build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, Helper.log(e, "PersonController.java", "getSingularPerson()")).build();
+			return Response.status(500).build();
 		}
 	}
 
@@ -107,15 +108,15 @@ public class PersonController {
 	@Path("update/{id}") //Makes sense???
 	public Response updatePerson(@PathParam("id") int id, Person person) {
 		try {
-			Person newPerson = Person.updatePerson(conn, id, person.getFirstName(), person.getMiddleName(), person.getLastName(), person.getHomePhone(), person.getMobilePhone(), person.getWorkPhone(), person.getHomeEmail(), person.getWorkEmail(), person.getHeight(), person.getWeight(), person.getRace(), person.getGender(), person.getAddressId(), person.getOccupationId());
+			Person newPerson = personHelper.updatePerson(conn, id, person);
 			if(newPerson!=null) {
 				Gson json = new Gson();
 				return Response.ok(json.toJson(newPerson), MediaType.APPLICATION_JSON).build();
 			}else {
-				return Response.status(500, Helper.log("Error updating person at ID: " + id + "!", "PersonController.java", "updatePerson()")).build();
+				return Response.status(500).build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, Helper.log(e, "PersonController.java", "updatePerson()")).build();
+			return Response.status(500).build();
 		}
 	}
 
@@ -130,38 +131,37 @@ public class PersonController {
 	@Path("insert/")
 	public Response insertPerson(Person person) {
 		try{
-			Person newPerson = Person.insertPerson(conn, person.getFirstName(), person.getMiddleName(), person.getLastName(), person.getHomePhone(), person.getMobilePhone(), person.getWorkPhone(), person.getHomeEmail(), person.getWorkEmail(), person.getHeight(), person.getWeight(), person.getRace(), person.getGender(), person.getAddressId(), person.getOccupationId());
+			Person newPerson = personHelper.insertPerson(conn, person);
 			if(newPerson!=null) {
 				Gson json = new Gson();
 				return Response.ok(json.toJson(newPerson), MediaType.APPLICATION_JSON).build();
 			}else {
-				return Response.status(500, Helper.log("Error inserting address!", "PersonController.java", "insertPerson()")).build();
+				return Response.status(500).build();
 			}
 		}
 		catch(Exception e) {
-			return Response.status(500, Helper.log(e, "PersonController.java", "insertPerson()")).build();
+			return Response.status(500).build();
 		}
 	}
 
 	/**
 	 * Allows user to submit a DELETE request to delete a person on the databse
-	 * @param field The field to match with the person
-	 * @param data Data of matchin field in person
+	 * @param id The id of the person
 	 * @return Response with JSON saying removed: true otherwise 500
 	 */
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("remove/{field}/{data}")
-	public Response removePerson(@PathParam("field") String field, @PathParam("data") String data) {
+	@Path("remove/{id}")
+	public Response removePerson(@PathParam("id") int id) {
 		try{
-			boolean removed = Person.removePerson(conn, field, data);
+			boolean removed = personHelper.removePerson(conn, id);
 			if(removed) {
 				return Response.ok("{\"removed\": \"true\"}").build();
 			}else {
-				return Response.status(500, Helper.log("Error removing person with " + field + " and data " + data, "PersonController.java", "removePerson()")).build();
+				return Response.status(500).build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, Helper.log(e, "PersonController.java", "removePerson()")).build();
+			return Response.status(500).build();
 		}
 	}
 }

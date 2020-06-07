@@ -1,4 +1,4 @@
-package com.jackstockley.addressbookrest;
+package com.jackstockley.AddressBookREST;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 /**
  * Handles making the connection between the RESTfull web service and the MySQL server
  * @author jackstockley
- * @version 2.00
+ * @version 2.6
  *
  */
 @Path("connect")
@@ -29,7 +29,7 @@ public class RESTController {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			if(conn==null) {
-				conn = DriverManager.getConnection("jdbc:mysql://jackstockleyiowa.ddns.net/addressBook?user=Jack&password=password&serverTimezone=UTC");
+				conn = DriverManager.getConnection("jdbc:mysql://10.0.0.191/addressBook?user=********&password=********&serverTimezone=UTC");
 				return conn;
 			}else {
 				return conn;
@@ -58,10 +58,10 @@ public class RESTController {
 			if(conn.isValid(1)) {
 				return Response.ok("Connection set up with server " + server + " and database " + database + " and user " + userName).build();
 			}else {
-				return Response.status(500, "Error creating connection to server!").build();
+				return Response.status(500).build();
 			}
 		}catch(Exception e) {
-			return Response.status(500, Helper.log(e, "RESTController.java", "setUpConnection()")).build();
+			return Response.status(500).build();
 
 		}
 	}

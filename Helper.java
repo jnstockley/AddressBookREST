@@ -1,4 +1,4 @@
-package com.jackstockley.addressbookrest;
+package com.jackstockley.AddressBookREST;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,16 +6,22 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import jackstockley.addressbook.*;
 
 /**
  * This part of the program helps with random tasks to make the program function
  * Part of the functions are logging and allowing for any data or time searching on the database
  * @author jnstockley
- * @version 2.00
+ * @version 2.6
  *
  */
 
+
 public class Helper {
+	
+	private Address addressHelper = new Address();
+	private Occupation occupationHelper = new Occupation();
+	private Person personHelper = new Person();
 
 	/**
 	 * Takes an exception from a try catch method and print the error message to a log file in the current directory of the program
@@ -70,8 +76,8 @@ public class Helper {
 	 * @param conn The MySQL connection
 	 * @return True if the address was added to the database otherwise false
 	 */
-	public static boolean exists(Address newAddress, Connection conn) {
-		List<Address> addresses = Address.getAddress(conn); //Gets all the addresses in the database
+	public boolean exists(Address newAddress, Connection conn) {
+		List<Address> addresses = addressHelper.getAllAddresses(conn); //Gets all the addresses in the database
 		for (Address address : addresses) { //Loops through all addresses
 			if (address.equals(newAddress)) //Checks if an address on the database equals the newly created address
 				return true; 
@@ -85,8 +91,8 @@ public class Helper {
 	 * @param conn The MySL connection
 	 * @return True if the occupation was added otherwise false
 	 */
-	public static boolean exists(Occupation newOccupation, Connection conn) {
-		List<Occupation> occupations = Occupation.getOccupation(conn); //Gets all the occupations in the database
+	public boolean exists(Occupation newOccupation, Connection conn) {
+		List<Occupation> occupations = occupationHelper.getAllOccupations(conn); //Gets all the occupations in the database
 		for (Occupation occupation : occupations) { //Loops through all occupations
 			if (occupation.equals(newOccupation)) //Checks if an occupation on the database equals the newly created occupation
 				return true; 
@@ -100,8 +106,8 @@ public class Helper {
 	 * @param conn The MySQL connection
 	 * @return True if the person was added otherwise false
 	 */
-	public static boolean exists(Person newPerson, Connection conn) {
-		List<Person> people = Person.getPerson(conn); //Gets all the people in the database
+	public boolean exists(Person newPerson, Connection conn) {
+		List<Person> people = personHelper.getAllPeople(conn); //Gets all the people in the database
 		for (Person person : people) { //Loops through all people
 			if (person.equals(newPerson)) //Checks if a person on the database equals the newly created person
 				return true; 
