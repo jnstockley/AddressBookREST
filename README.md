@@ -1,5 +1,8 @@
 # AddressBookREST
 
+## Version 3.0
+I have released a pre-relase version of version 3.0 under the releases tab. This version has improvements and feature changes. To learn more visit the released tab!
+
 ## Version 2.6
 Version 2.6 has been released! This update supports the new backend and AES encyrption and decryption! The next update I plan on optimizing the code since update has some unsuded code and was rushed. The REST API is still functional but needs improvement! Look for a version 2.7!
 
