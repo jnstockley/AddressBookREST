@@ -1,6 +1,6 @@
 # AddressBookREST
 
-## Version 3.0
+## Version 3.0b1
 I have released a pre-relase version of version 3.0 under the releases tab. This version has improvements and feature changes. To learn more visit the released tab!
 
 ## Version 2.6
