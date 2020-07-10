@@ -1,171 +1,143 @@
-package com.jackstockley.AddressBookREST;
+package com.github.jnstockley.addressbookrest;
 
 import java.sql.Connection;
 import java.util.List;
-import com.google.gson.Gson;
-
-import jackstockley.addressbook.Occupation;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.github.jnstockley.addressbook.Occupation;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /**
- * Manages the RESTful side of occupation object
+ * A RESTful web service with full CRUD support for the Occupation table
+ * Supports GET, PUT, POST, DELETE
  * @author jackstockley
- * @version 2.6
+ * @version 3.0
  */
 
-@Path("occupation")
+@RestController
+@RequestMapping("/occupation")
+@Api(value = "Occupation", tags = "Occupation")
 public class OccupationController {
 
-	private Occupation occupationHelper = new Occupation();
-	private Connection conn = RESTController.getConnection();
+	private RESTController connection = new RESTController(); //REST Controller for getting mySQL connection
+	private Connection conn = connection.getConnection(); //The mySQL connection
+	private Occupation occupationHelper = new Occupation(); //Occupation Helper to interface with the backend
 
 	/**
-	 * Returns JSON for all the occupations in the database or status code 204 if no occupations in databse
-	 * @return Resposne with either 200, 204, or 500
+	 * Gets all the occupations stored on the database and returns them
+	 * @return A list of occupations
 	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllOccupations() {
+	@GetMapping("/")
+	@ApiOperation(value = "Gets all the occupations stored on the database and returns them",
+	response = Occupation.class, responseContainer = "List")
+	public List<Occupation> getAllOccupations() {
 		try {
-			List<Occupation> occupations = occupationHelper.getAllOccupations(conn);
-			if(occupations!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(occupations), MediaType.APPLICATION_JSON).build();
-
+			List<Occupation> occupations = occupationHelper.getAllOccupations(conn); //Gets all the occupations from the database
+			if(occupations!=null) { //Makes sure backend got valid data
+				return occupations; //Returns the occupations list
 			}else {
-				return Response.noContent().build();
+				return null;
 			}
 		}catch(Exception e) {
-			return Response.status(500).build();
+			e.printStackTrace();
+			return null;
 		}
 	}
 
 	/**
-	 * Returns JSON for all the occupations in the database with similar field and data or status code 204 if no similar occupations
-	 * @param field Field to match data with
-	 * @param data Similar data between occupations
-	 * @return Response with either 200, 204, or 500
+	 * Gets a singular occupation from the database based on the id passed and returns it
+	 * @param id ID of the occupation on the database
+	 * @return An occupation object
 	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("{field}/{data}")
-	public Response getSimilarOccupations(@PathParam("field") String field, @PathParam("data") String data) {
+	@GetMapping("/{id}")
+	@ApiOperation(value = "Gets a singular occupation from the database based on the id passed and returns it",
+	response = Occupation.class)
+	public Occupation getOccupationById(@PathVariable int id) {
 		try {
-			if(field.equals("date") || field.equals("time")) {
-				while(data.contains("*")) {
-					data = data.replace("*", "%");
-				}
-			}
-			List<Occupation> occupations = occupationHelper.getSimilarOccupation(conn, field, data);
-			if(occupations!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(occupations), MediaType.APPLICATION_JSON).build();
+			Occupation occupation = occupationHelper.getSingularOccupation(conn, id); //Gets a singular occupation from the database based on the id passed
+			if(occupation!=null) { //Makes sure backend got valid data
+				return occupation; //Returns the occupation
 			}else {
-				return Response.noContent().build();
+				return null;
 			}
 		}catch(Exception e) {
-			return Response.status(500).build();
+			e.printStackTrace();
+			return null;
 		}
 	}
 
 	/**
-	 * Returns JSON for a singular occupation in the database or 204 if no occupation matches the id
-	 * @param id ID of the occupation to be returned
-	 * @return Response with either 200, 204, or 500
-	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("{id}")
-	public Response getSingularOccupation(@PathParam("id") int id) {
-		try {
-			Occupation occupation = occupationHelper.getSingularOccupation(conn, id);
-			if(occupation!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(occupation), MediaType.APPLICATION_JSON).build();
-			}else {
-				return Response.noContent().build();
-			}
-		}catch(Exception e) {
-			return Response.status(500).build();
-		}
-	}
-
-	/**
-	 * Allows user to sumbit a POST request to update an occupation on the database
+	 * Updates a user specified occupation at the id passed
 	 * @param id ID of the occupation to be updated
-	 * @param occupation The new occupation that will replace the current occupation
-	 * @return Response 200 and new occupation if updated otherwise 500
+	 * @param occupation The new occupation to update the current occupation
+	 * @return An occupation object
 	 */
-	@POST
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("update/{id}")
-	public Response updateOccupation(@PathParam("id") int id, Occupation occupation) {
+	@PutMapping("/{id}")
+	@ApiOperation(value = "Updates a user specified occupation at the id passed",
+	response = Occupation.class)
+	public Occupation updateOccupation(@PathVariable int id, @RequestBody Occupation occupation) {
 		try {
-			Occupation newOccupation = occupationHelper.updateOccupation(conn, id,occupation);
-			if(newOccupation!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(newOccupation), MediaType.APPLICATION_JSON).build();
+			Occupation updatedOccupation = occupationHelper.updateOccupation(conn, id, occupation); //Updates an occupation at the given id
+			if(updatedOccupation.equals(occupation)) { //Makes sure the user passed occupation and the returned occupation are the same
+				return updatedOccupation; //Returns the updated occupation
 			}else {
-				return Response.status(500).build();
+				return null;
 			}
 		}catch(Exception e) {
-			return Response.status(500).build();
+			e.printStackTrace();
+			return null;
 		}
 	}
 
 	/**
-	 * Allows user to sumbit a PUT reuest to create a new occupation on the database
-	 * @param occupation The new occupation to be added
-	 * @return Response 200 and new occupation if added otherwise 500
+	 * Inserts a new occupation into the database
+	 * @param occupation New occupation to be added
+	 * @return New occupation added
 	 */
-	@PUT
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("insert")
-	public Response insertOccupation(Occupation occupation) {
-		try{
-			Occupation newOccupation = occupationHelper.insertOccupation(conn, occupation);
-			if(newOccupation!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(newOccupation), MediaType.APPLICATION_JSON).build();
+	@PostMapping("/")
+	@ApiOperation(value = "Inserts a new occupation into the database",
+	response = Occupation.class)
+	public Occupation insertOccupation(@RequestBody Occupation occupation) {
+		try {
+			Occupation newOccupation = occupationHelper.insertOccupation(conn, occupation); //Inserts a new occupation
+			if(newOccupation.equals(occupation)) { //Makes sure the user passed occupation and the returned occupation are the same
+				return newOccupation; //Returns the new occupation
 			}else {
-				return Response.status(500).build();
+				return null;
 			}
-		}
-		catch(Exception e) {
-			return Response.status(500).build();
+		}catch(Exception e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 
 	/**
-	 * Allows user to submit a DELETE request to delete an occupation on the databse
-	 * @param id The id of the occupation
-	 * @return Response with JSON saying removed: true otherwise 500
+	 * Removes a user specified occupation from the database
+	 * @param id  ID of the occupation to be deleted
+	 * @return True if occupation removed otherwise false
 	 */
-	@DELETE
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("remove/{id}")
-	public Response removeOccupation(@PathParam("id") int id) {
-		try{
-			boolean removed = occupationHelper.removeOccupation(conn, id);
-			if(removed) {
-				return Response.ok("{\"removed\": \"true\"}").build();
+	@DeleteMapping("/{id}")
+	@ApiOperation(value = "Removes a user specified occupation from the database",
+	response = boolean.class)
+	public boolean removeOccupation(@PathVariable int id) {
+		try {
+			boolean removed = occupationHelper.removeOccupation(conn, id); //Creates a boolean and removes the occupation from the database
+			if(removed) { //Makes sure the backend removed the occupation
+				return true; //Returns true
 			}else {
-				return Response.status(500).build();
+				return false;
 			}
 		}catch(Exception e) {
-			return Response.status(500).build();
+			e.printStackTrace();
+			return false;
 		}
 	}
 }
+

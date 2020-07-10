@@ -1,167 +1,142 @@
-package com.jackstockley.AddressBookREST;
+package com.github.jnstockley.addressbookrest;
 
 import java.sql.Connection;
 import java.util.List;
-import com.google.gson.Gson;
-import jackstockley.addressbook.*;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import org.springframework.web.bind.annotation.RequestMapping;
+import com.github.jnstockley.addressbook.Person;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Manages the RESTful side of the person object
+ * A RESTful web service with full CRUD support for the Person table
+ * Supports GET, PUT, POST, DELETE
  * @author jackstockley
- * @version 2.6
- *
+ * @version 3.0
  */
-@Path("person")
+@RestController
+@RequestMapping("/person")
+@Api(value = "Person", tags = "Person")
 public class PersonController {
 
-	private Person personHelper = new Person();
-	private Connection conn = RESTController.getConnection();
-
+	private RESTController connection = new RESTController(); //REST Controller for getting mySQL connection
+	private Connection conn = connection.getConnection(); //The mySQL connection
+	private Person personHelper = new Person(); //Person Helper to interface with the backend
+	
 	/**
-	 * Returns JSON for all the people in the database or status code 204 if no people in databse
-	 * @return Resposne with either 200, 204, or 500
+	 * Gets all the people stored in the database and returns them
+	 * @return A list of people
 	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllPeople() {
+	@GetMapping("/")
+	@ApiOperation(value = "Gets all the people stored in the database and returns them",
+					response = Person.class, responseContainer = "List")
+	public List<Person> getAllPeople() {
 		try {
-			List<Person> people = personHelper.getAllPeople(conn);
-			if(!people.isEmpty()) {
-				Gson json = new Gson();
-				//Response.ok().allow("GET");
-				return Response.ok(json.toJson(people), MediaType.APPLICATION_JSON).build();
+			List<Person> people = personHelper.getAllPeople(conn); //Gets all the people from the database
+			if(people!=null) { //Makes sure backend got valid data
+				return people; //Returns the people list
 			}else {
-				return Response.noContent().build();
+				return null;
 			}
 		}catch(Exception e) {
-			return Response.status(500).build();
+			e.printStackTrace();
+			return null;
 		}
 	}
-
+	
 	/**
-	 * Returns JSON for all the people in the database with similar field and data or status code 204 if no similar people
-	 * @param field Field to match data with
-	 * @param data Similar data between people
-	 * @return Response with either 200, 204, or 500
+	 * Gets a singular person from the database based on the id passed and returns it
+	 * @param id ID of the person on the database
+	 * @return A person object
 	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("{field}/{data}")
-	public Response getSimilarPeople(@PathParam("field") String field, @PathParam("data") String data) {
-		try{
-			if(field.equals("date") || field.equals("time")) {
-				data = data.replace("*", "%");
-			}
-			List<Person> people = personHelper.getSimilarPeople(conn, field, data);
-			if(people!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(people), MediaType.APPLICATION_JSON).build();
-			}else {
-				return Response.noContent().build();
-			}
-		}catch(Exception e) {
-			return Response.status(500).build();
-		}
-	}
-
-	/**
-	 * Returns JSON for a singular person in the database or 204 if no person matches the id
-	 * @param id ID of the person to be returned
-	 * @return Response with either 200, 204, or 500
-	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("{id}")
-	public Response getSingularPerson(@PathParam("id") int id) {
+	@GetMapping("/{id")
+	@ApiOperation(value = "Gets a singular person from the database based on the id passed and returns it",
+					response = Person.class)
+	public Person getPersonByID(@PathVariable int id) {
 		try {
-			Person person = personHelper.getSingularPerson(conn, id);
-			if(person!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(person), MediaType.APPLICATION_JSON).build();
+			Person person = personHelper.getSingularPerson(conn, id); //Gets a singular person from the database based on the id passed
+			if(person!=null) { //Makes sure backed got valid data
+				return person; //Returns the person
 			}else {
-				return Response.noContent().build();
+				return null;	
 			}
 		}catch(Exception e) {
-			return Response.status(500).build();
+			e.printStackTrace();
+			return null;
 		}
 	}
-
+	
 	/**
-	 * Allows user to sumbit a POST request to update a person on the database
+	 * Updates a user specified person at the id passed
 	 * @param id ID of the person to be updated
-	 * @param person The new person that will replace the current person
-	 * @return Response 200 and new person if updated otherwise 500
+	 * @param person The new person to update the current person
+	 * @return A person object
 	 */
-	@POST
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("update/{id}") //Makes sense???
-	public Response updatePerson(@PathParam("id") int id, Person person) {
+	@PutMapping("/{id}")
+	@ApiOperation(value = "Updates a user specified person at the id passed",
+					response = Person.class)
+	public Person updatePerson(@PathVariable int id, @RequestBody Person person) {
 		try {
-			Person newPerson = personHelper.updatePerson(conn, id, person);
-			if(newPerson!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(newPerson), MediaType.APPLICATION_JSON).build();
+			Person updatedPerson = personHelper.updatePerson(conn, id, person); //Updates a person at the given id
+			if(updatedPerson.equals(person)) { //Makes sure the user passed person and the returned person are the same
+				return updatedPerson; //Returns the updated person
 			}else {
-				return Response.status(500).build();
+				return null;
 			}
 		}catch(Exception e) {
-			return Response.status(500).build();
+			e.printStackTrace();
+			return null;
 		}
 	}
-
+	
 	/**
-	 * Allows user to sumbit a PUT reuest to create a new person on the database
-	 * @param person The new person to be added
-	 * @return Response 200 and new person if added otherwise 500
+	 * Inserts a new person into the database
+	 * @param person New person to be added
+	 * @return New person added
 	 */
-	@PUT
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("insert/")
-	public Response insertPerson(Person person) {
-		try{
-			Person newPerson = personHelper.insertPerson(conn, person);
-			if(newPerson!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(newPerson), MediaType.APPLICATION_JSON).build();
+	@PostMapping("/")
+	@ApiOperation(value = "Inserts a new person into the database",
+					response = Person.class)
+	public Person insertPerson(@RequestBody Person person) {
+		try {
+			Person newPerson = personHelper.insertPerson(conn, person); //Inserts a new person
+			if(newPerson.equals(person)) { //Makes sure the user passed person and the return person are the same
+				return newPerson; //Returns the new person
 			}else {
-				return Response.status(500).build();
-			}
-		}
-		catch(Exception e) {
-			return Response.status(500).build();
-		}
-	}
-
-	/**
-	 * Allows user to submit a DELETE request to delete a person on the databse
-	 * @param id The id of the person
-	 * @return Response with JSON saying removed: true otherwise 500
-	 */
-	@DELETE
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("remove/{id}")
-	public Response removePerson(@PathParam("id") int id) {
-		try{
-			boolean removed = personHelper.removePerson(conn, id);
-			if(removed) {
-				return Response.ok("{\"removed\": \"true\"}").build();
-			}else {
-				return Response.status(500).build();
+				return null;
 			}
 		}catch(Exception e) {
-			return Response.status(500).build();
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * Removes a user specified person from the database
+	 * @param id ID of the person to be removed
+	 * @return True if person removed otherwise false
+	 */
+	@DeleteMapping("/{id}")
+	@ApiOperation(value = "Removes a user specified person from the database",
+					response = boolean.class)
+	public boolean removePerson(@PathVariable int id) {
+		try {
+			boolean removed = personHelper.removePerson(conn, id); //Creates a boolean and removes the person from the database
+			if(removed) { //Makes sure the backend removed the person
+				return true; //Returns true
+			}else {
+				return false;
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 }
+

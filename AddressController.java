@@ -1,170 +1,146 @@
-package com.jackstockley.AddressBookREST;
+package com.github.jnstockley.addressbookrest;
 
 import java.sql.Connection;
 import java.util.List;
-import com.google.gson.Gson;
-import jackstockley.addressbook.*;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.github.jnstockley.addressbook.Address;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /**
- * Manages the RESTful side of the address object
+ * A RESTfull web service with full CRUD support for the Address table
+ * Supports GET, PUT, POST, DELETE
  * @author jackstockley
- * @version 2.6
+ * @version 3.0
  */
 
-@Path("address")
+@RestController
+@RequestMapping("/address")
+@Api(value = "Address", tags = "Address")
 public class AddressController {
 
-	private Address addressHelper = new Address();
-	private Connection conn = RESTController.getConnection();
+
+	private RESTController connection = new RESTController(); //REST Controller for getting mySQL connection
+	private Connection conn = connection.getConnection(); //The mySQL connection
+	private Address addressHelper = new Address(); //Address Helper to interface with the backend
 
 	/**
-	 * Returns JSON for all the addresses in the database or status code 204 if no addresses in databse
-	 * @return Response with either 200, 204, or 500
+	 * Gets all the addresses stored on the database and returns them
+	 * @return A list of Addresses
 	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAllAddresses() {
+	@GetMapping("/")
+	@ApiOperation(value = "Gets all the addresses stored on the database and returns them",
+	response = Address.class, responseContainer = "List")
+	public List<Address> getAllAddresses() {
 		try {
-			List<Address> addresses = addressHelper.getAllAddresses(conn);
-			if(addresses!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(addresses), MediaType.APPLICATION_JSON).build();
-			}else {
-				return Response.noContent().build();
-			}
-		}catch(Exception e) {
-			e.printStackTrace();
-			return Response.status(500).build();
-		}
-	}
-
-	/**
-	 * Returns JSON for all the addresses in the database with similar field and data or status code 204 if no similar addresses
-	 * @param field Field to match data with
-	 * @param data Similar data between addresses
-	 * @return Response with either 200, 204, or 500
-	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("{field}/{data}")
-	public Response getSimilarAddresses(@PathParam("field") String field, @PathParam("data") String data) {
-		try{
-			if(field.equals("date") || field.equals("time")) {
-				while(data.contains("*")) {
-					data = data.replace("*", "%");
+			if(conn!=null) {
+				List<Address> addresses = addressHelper.getAllAddresses(conn); //Gets all the addresses from the database
+				if(addresses!=null) { //Makes sure the backend got valid data
+					return addresses; //Returns the addresses list
+				}else {
+					return null;
 				}
-			}
-			List<Address> addresses = addressHelper.getSimilarAddress(conn,field, data);
-			if(addresses!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(addresses), MediaType.APPLICATION_JSON).build();
 			}else {
-				return Response.noContent().build();
+				return null;
 			}
 		}catch(Exception e) {
-			return Response.status(500).build();
-		}
-	}
-
-	/**
-	 * Returns JSON for a singular address in the database or 204 if no address matches the id
-	 * @param id ID of the address to be returned
-	 * @return Response with either 200, 204, or 500
-	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("{id}")
-	public Response getSingularAddress(@PathParam("id") int id) {
-		try {
-			Address address = addressHelper.getSingularAddress(conn, id);
-			if(address!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(address), MediaType.APPLICATION_JSON).build();
-			}else {
-				return Response.noContent().build();
-			}
-		}catch(Exception e) {
-			return Response.status(500).build();
-		}
-	}
-
-	/**
-	 * Allows user to sumbit a POST request to update an address on the database
-	 * @param id ID of the address to be updated
-	 * @param address The new address that will replace the current address
-	 * @return Response 200 and new address if updated otherwise 500
-	 */
-	@POST
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("update/{id}") //Makes sense???
-	public Response updateAddress(@PathParam("id") int id, Address address) {
-		try {
-			Address newAddress = addressHelper.updateAddress(conn, id, address);
-			if(newAddress!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(newAddress), MediaType.APPLICATION_JSON).build();
-			}else {
-				return Response.status(500).build();
-			}
-		}catch(Exception e) {
-			return Response.status(500).build();
-		}
-	}
-
-	/**
-	 * Allows user to sumbit a PUT reuest to create a new address on the database
-	 * @param address The new address to be added
-	 * @return Response 200 and new address if added otherwise 500
-	 */
-	@PUT
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("insert")
-	public Response insertAddress(Address address) {
-		try{
-			Address newAddress = addressHelper.insertAddress(conn, address);
-			if(newAddress!=null) {
-				Gson json = new Gson();
-				return Response.ok(json.toJson(newAddress), MediaType.APPLICATION_JSON).build();
-			}else {
-				return Response.status(500).build();
-			}
-		}
-		catch(Exception e) {
 			e.printStackTrace();
-			return Response.status(500).build();
+			return null;
 		}
 	}
 
 	/**
-	 * Allows user to submit a DELETE request to delete an address on the databse
-	 * @param id The id of the address
-	 * @return Response with JSON saying removed: true otherwise 500
+	 * Gets a singular address from the database based on the id passed and returns it
+	 * @param id ID of the address on the database
+	 * @return An address object
 	 */
-	@DELETE
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("remove/{id}")
-	public Response removeAddress(@PathParam("id") int id) {
-		try{
-			boolean removed = addressHelper.removeAddress(conn, id);
-			if(removed) {
-				return Response.ok("{\"removed\": \"true\"}").build();
+	@GetMapping("/{id}")
+	@ApiOperation(value = "Gets a singular address from the database based on the id passed and returns it",
+	response = Address.class)
+	public Address getAddressByID(@PathVariable int id) {
+		try {
+			Address address = addressHelper.getSingularAddress(conn, id); //Gets a singular address from the database based on the id passed
+			if(address!=null) { //Makes sure backend got valid data
+				return address; //Returns the address
 			}else {
-				return Response.status(500).build();
+				return null;
 			}
 		}catch(Exception e) {
-			return Response.status(500).build();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * Updates a user specified address at the id passed
+	 * @param id ID of the address to be updated
+	 * @param address The new address to update the current address
+	 * @return An address object
+	 */
+	@PutMapping("/{id}")
+	@ApiOperation(value = "Updates a user specified address at the id passed",
+	response = Address.class)
+	public Address updateAddress(@PathVariable int id, @RequestBody Address address) {
+		try {
+			Address updatedAddress = addressHelper.updateAddress(conn, id, address); //Updates an address at the given id
+			if(updatedAddress.equals(address)) { //Makes sure the user passed address and the returned address are the same
+				return updatedAddress; //Returns the updated address
+			}else {
+				return null;
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * Inserts a new address into the database
+	 * @param address New address to be added
+	 * @return New address added
+	 */
+	@PostMapping("/")
+	@ApiOperation(value = "Inserts a new address into the database",
+	response = Address.class)
+	public Address insertAddress(@RequestBody Address address) {
+		try {
+			Address newAddress = addressHelper.insertAddress(conn, address); //Inserts a new address
+			if(newAddress.equals(address)) { //Makes sure the user passed address and the returned address are the same
+				return newAddress; //Returns the new address
+			}else {
+				return null;
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	/**
+	 * Removes a user specified address from the database
+	 * @param id ID of the address to be removed
+	 * @return True if address removed otherwise false
+	 */
+	@DeleteMapping("/")
+	@ApiOperation(value = "Removes a user specified address from the database",
+	response = boolean.class)
+	public boolean removeAddress(@PathVariable int id) {
+		try {
+			boolean removed = addressHelper.removeAddress(conn, id); //Creates a boolean and removes the address from the database
+			if(removed) { //Makes sure the backend removed the address
+				return true; //Returns true
+			}else {
+				return false;
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 }
