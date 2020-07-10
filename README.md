@@ -1,5 +1,8 @@
 # AddressBookREST
 
+## Version 3.0
+I have just released Version 3.0! This version took longer to come then expexted. The main reason this took a while was becuase I had to convert the application to a springboot application rather then just maven. This version has added support for swagger documentation. To learn how to access read below!
+
 ## Version 3.0b1
 I have released a pre-relase version of version 3.0 under the releases tab. This version has improvements and feature changes. To learn more visit the released tab!
 
@@ -32,6 +35,9 @@ This is the biggest update since I have release the first address book!
   There are 2 ways to use this software on my server
     1. Use the war file on your own tomcat install and by default it will connect to my server
     2. Go to http://jackstockleyiowa.ddns.net/AddressBookUI This uses the RESTful service in a nice web UI
+  
+ ## How to access swagger doc!
+  In order to access the swagger doc you have to first deploy the rest interface. Once deployed and running in a web browser go to http://[server ip]:8080/addressbookrest/swagger-ui.html
   
  ## Found a bug!
   Please report the bug under the issues tab with the bug label or tweet me on twitter @jackstockley_
