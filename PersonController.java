@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
  * A RESTful web service with full CRUD support for the Person table
  * Supports GET, PUT, POST, DELETE
  * @author jackstockley
- * @version 3.0
+ * @version 3.0.1
  */
 @RestController
 @RequestMapping("/person")
@@ -55,7 +55,7 @@ public class PersonController {
 	 * @param id ID of the person on the database
 	 * @return A person object
 	 */
-	@GetMapping("/{id")
+	@GetMapping("/{id}")
 	@ApiOperation(value = "Gets a singular person from the database based on the id passed and returns it",
 					response = Person.class)
 	public Person getPersonByID(@PathVariable int id) {

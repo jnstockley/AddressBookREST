@@ -18,7 +18,7 @@ import io.swagger.annotations.ApiOperation;
  * A RESTfull web service with full CRUD support for the Address table
  * Supports GET, PUT, POST, DELETE
  * @author jackstockley
- * @version 3.0
+ * @version 3.0.1
  */
 
 @RestController

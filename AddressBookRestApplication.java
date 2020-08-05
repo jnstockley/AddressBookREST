@@ -33,7 +33,7 @@ public class AddressBookRestApplication {
 		return new ApiInfo(
 				"Address Book REST",
 				"Address Book RESTful Service with full CRUD support",
-				"3.0",
+				"3.0.1",
 				"Free to use",
 				new springfox.documentation.service.Contact("Jack Stockley", "https://jnstockley.github.io/", ""),
 				"API License",

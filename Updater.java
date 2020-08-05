@@ -6,13 +6,13 @@ import org.jsoup.nodes.Document;
 /**
  * This small part of the program helps check for version updated of the program and tells the user how to download them
  * @author jnstockley
- * @version 3.0
+ * @version 3.0.1
  *
  */
 
 public class Updater {
 	
-	public static double Version = 3.0;
+	public static double Version = 3.01;
 	
 	
 
