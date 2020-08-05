@@ -1,5 +1,8 @@
 # AddressBookREST
 
+## Version 3.0.1
+This update includes updated dependencies and some minor bug fixes when getting a singular person! Please update.
+
 ## Version 3.0
 I have just released Version 3.0! This version took longer to come then expexted. The main reason this took a while was becuase I had to convert the application to a springboot application rather then just maven. This version has added support for swagger documentation. To learn how to access read below!
 
