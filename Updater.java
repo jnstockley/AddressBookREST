@@ -6,15 +6,21 @@ import org.jsoup.nodes.Document;
 /**
  * This small part of the program helps check for version updated of the program and tells the user how to download them
  * @author jnstockley
- * @version 3.0.1
+ * @version 3.2
  *
  */
 
 public class Updater {
 	
-	public static double Version = 3.01;
+	private final static double VERSION = 3.2; //Current project version
 	
 	
+	/**
+	 * @return the version
+	 */
+	public static double getVersion() {
+		return VERSION;
+	}
 
 	
 	/**
@@ -37,7 +43,11 @@ public class Updater {
 			return false;
 		}
 	}
-	
+
+	/**
+	 * Returns a string informing the user the program is out-of-date
+	 * @return String with out-of-date message
+	 */
 	public String updateMessage() {
 		return "Server is out of date! Please update to the latest version at https://github.com/jnstockley/AddressBookREST/releases";
 	}
