@@ -1,5 +1,8 @@
 # AddressBookREST
 
+## Version 3.2
+This update includes all the changes during the BETA as well as updated dependencies. 
+
 ## Version 3.0.1
 This update includes updated dependencies and some minor bug fixes when getting a singular person! Please update.
 
